@@ -163,61 +163,61 @@ function evaluateBoard(board) {
 
 
 //Alpha Beta
-//
-// function getBestMoveAlphaBeta() {
-//     let bestScore = -Infinity;
-//     let bestMove;
-//
-//     board.forEach((cell, index) => {
-//         if (cell === '') {
-//             board[index] = 'X';
-//             let score = minimaxAlphaBeta(board, 0, false, -Infinity, Infinity);
-//             board[index] = '';
-//             if (score > bestScore) {
-//                 bestScore = score;
-//                 bestMove = index;
-//             }
-//         }
-//     });
-//     return bestMove;
-// }
-// function minimaxAlphaBeta(board, depth, isMaximizing, alpha , beta) {
-//     const score = evaluateBoard(board)
-//
-//     if(score !== 0 || board.every(cell => cell)) return score;
-//
-// if(isMaximizing){
-//     let bestScore = -Infinity;
-//     board.forEach((cell, index) => {
-//         if(cell === ''){
-//             board[index] ='X';
-//             let score = minimaxAlphaBeta(board , depth + 1, false, alpha , beta);
-//
-//             board[index] = '';
-//             bestScore = Math.max(score, bestScore);
-//             alpha = Math.max(alpha, bestScore);
-//             if(beta <= alpha) return bestScore;
-//         }
-//     })
-//
-//     return bestScore;
-// }else {
-//     let bestScore = Infinity;
-//     board.forEach((cell, index) => {
-//         if(cell === ''){
-//             board[index] ='O';
-//             let score = minimaxAlphaBeta(board , depth + 1, true, alpha , beta);
-//
-//             board[index] = '';
-//             bestScore = Math.min(score, bestScore);
-//             beta = Math.min(beta, bestScore);
-//             if(beta <=alpha) return bestScore;
-//         }
-//     })
-//     return bestScore;
-// }
-// }
-//
+
+function getBestMoveAlphaBeta() {
+    let bestScore = -Infinity;
+    let bestMove;
+
+    board.forEach((cell, index) => {
+        if (cell === '') {
+            board[index] = 'X';
+            let score = minimaxAlphaBeta(board, 0, false, -Infinity, Infinity);
+            board[index] = '';
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = index;
+            }
+        }
+    });
+    return bestMove;
+}
+function minimaxAlphaBeta(board, depth, isMaximizing, alpha , beta) {
+    const score = evaluateBoard(board)
+
+    if(score !== 0 || board.every(cell => cell)) return score;
+
+if(isMaximizing){
+    let bestScore = -Infinity;
+    board.forEach((cell, index) => {
+        if(cell === ''){
+            board[index] ='X';
+            let score = minimaxAlphaBeta(board , depth + 1, false, alpha , beta);
+
+            board[index] = '';
+            bestScore = Math.max(score, bestScore);
+            alpha = Math.max(alpha, bestScore);
+            if(beta <= alpha) return bestScore;
+        }
+    })
+
+    return bestScore;
+}else {
+    let bestScore = Infinity;
+    board.forEach((cell, index) => {
+        if(cell === ''){
+            board[index] ='O';
+            let score = minimaxAlphaBeta(board , depth + 1, true, alpha , beta);
+
+            board[index] = '';
+            bestScore = Math.min(score, bestScore);
+            beta = Math.min(beta, bestScore);
+            if(beta <=alpha) return bestScore;
+        }
+    })
+    return bestScore;
+}
+}
+
 // //Negamax
 //
 // function getBestMoveNegamax(){
