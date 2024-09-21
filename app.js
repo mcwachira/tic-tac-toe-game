@@ -218,49 +218,49 @@ if(isMaximizing){
 }
 }
 
-// //Negamax
-//
-// function getBestMoveNegamax(){
-//     let bestScore = -Infinity;
-//     let bestMove;
-//
-//     board.forEach((cell, index) => {
-//         if(cell === ''){
-//             board[index] = 'X';
-//             let score = -negamax(board, 0, false);
-//             board[index] = '';
-//             if(score >bestScore){
-//                 bestScore = score;
-//                 bestMove= index;
-//             }
-//         }
-//
-//     })
-//
-//     return bestMove;
-// }
-//
-// function negamax(board, depth, isMaximizing){
-//     const score = evaluateBoard(board);
-//
-//     if(score !== 0 || board.every(cell => cell)) return score;
-//
-//     let bestScore = -Infinity;
-//
-//     board.forEach((cell, index) => {
-//         if(cell === ''){
-//             board[index] = isMaximizing ? 'X' :'O';
-//
-//             let score = -negamax(board, depth +1 , !isMaximizing);
-//             board[index] = '';
-//             bestScore = Math.max(score, bestScore)
-//         }
-//     })
-//
-//     return bestScore
-// }
-//
-//
+//Negamax
+
+function getBestMoveNegamax(){
+    let bestScore = -Infinity;
+    let bestMove;
+
+    board.forEach((cell, index) => {
+        if(cell === ''){
+            board[index] = 'X';
+            let score = -negamax(board, 0, false);
+            board[index] = '';
+            if(score >bestScore){
+                bestScore = score;
+                bestMove= index;
+            }
+        }
+
+    })
+
+    return bestMove;
+}
+
+function negamax(board, depth, isMaximizing){
+    const score = evaluateBoard(board);
+
+    if(score !== 0 || board.every(cell => cell)) return score;
+
+    let bestScore = -Infinity;
+
+    board.forEach((cell, index) => {
+        if(cell === ''){
+            board[index] = isMaximizing ? 'X' :'O';
+
+            let score = -negamax(board, depth +1 , !isMaximizing);
+            board[index] = '';
+            bestScore = Math.max(score, bestScore)
+        }
+    })
+
+    return bestScore
+}
+
+
 // //Monte Carlo Tree Search
 //
 // function getBestMoveMCTS() {
