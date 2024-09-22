@@ -1,10 +1,14 @@
-const gameBoard = document.querySelector("#game-board");
+// const board = document.querySelector("#board");
 const infoDisplay = document.querySelector("#info");
-const resetButton = document.querySelector("#reset-button");
+const resetButton = document.querySelector("#restartGame");
 const aiSelect = document.querySelector("#ai-algorithm");
 
-let currentPlayer = 'O'; // O is player, X is AI
+let currentPlayer = "X"; // Initial player
+let gameActive = true;
+let winnerDisplay = document.getElementById('winnerDisplay');
+let aiThinking = document.getElementById('aiThinking');
 let board = Array(9).fill('');
+
 
 // Define winning combinations
 const winningCombo = [
@@ -14,36 +18,45 @@ const winningCombo = [
 ];
 
 // Initialize the board
-function createBoard() {
-    gameBoard.innerHTML = '';
-    board = Array(9).fill('');
-    currentPlayer = 'O';
-    infoDisplay.textContent = "Player O's turn";
-
-    board.forEach((_, index) => {
-        const cellElement = document.createElement("div");
-        cellElement.classList.add("square");
-        cellElement.addEventListener("click", () => playerMove(index));
-        gameBoard.append(cellElement);
-    });
-}
+// function createBoard() {
+//     // gameBoard.innerHTML = '';
+//     // board = Array(9).fill('');
+//     currentPlayer = 'O';
+//     // infoDisplay.textContent = "Player O's turn";
+//
+//     board.forEach((_, index) => {
+//         const cellElement = document.createElement("div");
+//         cellElement.classList.add("square");
+//         cellElement.addEventListener("click", () => handlePlayerMove(index));
+//         board.append(cellElement);
+//     });
+// }
 
 // Player's move
-function playerMove(index) {
-    if (board[index] === '') {
+function handlePlayerMove(index) {
+    if (!gameActive || board[index] !== '') return ;
         board[index] = currentPlayer;
-        updateBoard();
-        if (!checkWinner()) {
-            currentPlayer = 'X';
-            aiMove();
+        document.getElementById(`cell-${index}`).innerText = currentPlayer;
+        // updateBoard();
+        if (checkWinner()) return
+            //Losing player starts the next game
+            currentPlayer = (currentPlayer === 'X') ? "O" : "X";
+
+
+
+        if(currentPlayer === 'O' && gameActive
+        ){
+    aiMove();
         }
-    }
+
 }
 
 // AI's move
 function aiMove() {
     const aiAlgorithm = aiSelect.value;
     let bestMove;
+    aiThinking.style.display = 'block'
+    setTimeout(() => {
 
     if (aiAlgorithm === "minimax") {
         bestMove = getBestMoveMinimax();
@@ -57,48 +70,89 @@ function aiMove() {
         bestMove = getBestMoveHeuristics();
     }
 
-    board[bestMove] = currentPlayer;
-    updateBoard();
-    if (!checkWinner()) {
-        currentPlayer = 'O';
-        infoDisplay.textContent = "Player O's turn";
-    }
+    // board[bestMove] = currentPlayer;
+        board[bestMove] = "0";
+    document.getElementById(`cell-${bestMove}`).innerText = "O"
+        aiThinking.style.display = 'none';
+    // updateBoard();
+    if (checkWinner()) return ;
+        currentPlayer = 'X';
+
+
+    },1000)
 }
 
-// Update the board display
-function updateBoard() {
-    gameBoard.childNodes.forEach((cell, index) => {
-        cell.textContent = board[index];
-    });
+
+function highlightAiCell(index){
+    document.getElementById(`cell-${index}`).classList.add('highlight');
+        setTimeout(() =>{
+            document.getElementById(`cell-${index}`).classList.remove('highlight');
+        }, 500)
 }
+// Update the board display
+// function updateBoard() {
+//     gameBoard.childNodes.forEach((cell, index) => {
+//         cell.textContent = board[index];
+//     });
+// }
 
 // Check if there's a winner or draw
 function checkWinner() {
-    let winner = null;
+    // let winner = null;
 
     winningCombo.forEach(combo => {
         const [a, b, c] = combo;
         if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            winner = board[a];
+           declareWinner(currentPlayer)
+            return true;
         }
     });
 
-    if (winner) {
-        infoDisplay.textContent = `${winner} wins!`;
-        return true;
-    } else if (board.every(cell => cell)) {
-        infoDisplay.textContent = "It's a draw!";
+ if (board.every(cell => cell)) {
+       declareWinner("Tie")
         return true;
     }
 
     return false;
 }
+function declareWinner(winner){
+
+    if(winner === 'Tie'){
+        winnerDisplay.innerHTML = "It's a tie!"
+    }else {
+        winnerDisplay.innerHTML= `${winner} wins!`
+    }
+
+    gameActive = false;
+}
+
+
+function restartGame() {
+    board = ["", "", "", "", "", "", "", "", ""];
+    currentPlayer = "X";
+    gameActive = true;
+    winnerDisplay.innerHTML = "";
+    for (let i = 0; i < 9; i++) {
+        document.getElementById(`cell-${i}`).innerText = "";
+    }
+}
+
+window.onload = function() {
+    const boardDiv = document.getElementById('board');
+    for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.id = `cell-${i}`;
+        cell.addEventListener('click', () => handlePlayerMove(i));
+        boardDiv.appendChild(cell);
+    }
+};
 
 // Reset the game
-resetButton.addEventListener("click", createBoard);
+resetButton.addEventListener("click", restartGame);
 
 // Initialize game on page load
-createBoard();
+// createBoard();
 
 
 

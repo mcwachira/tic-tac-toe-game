@@ -8,9 +8,11 @@
 </head>
 <body>
 <h1>Tic Tac Toe - Play Against AI</h1>
-<div id="game-board"></div>
-<div id="info"></div>
-<button id="reset-button">Reset Game</button>
+<div id="board"></div>
+<div id="winnerDisplay"></div>
+<div id="aiThinking" style="display:none;">AI is thinking...</div>
+<button id="restartGame">Restart Game</button>
+
 <select id="ai-algorithm">
   <option value="minimax">Minimax</option>
   <option value="alpha-beta">Alpha-Beta Pruning</option>
