@@ -261,8 +261,168 @@ function negamax(board, depth, isMaximizing){
 }
 
 
-// //Monte Carlo Tree Search
-//
-// function getBestMoveMCTS() {
-//
-// }
+//Monte Carlo Tree Search
+
+class Node {
+    constructor(board, player, move = null, parent = null) {
+        this.board = [...board]; // Copy of the board state
+        this.player = player; // Current player at this node (1 for 'X', -1 for 'O')
+        this.move = move; // Move that led to this state
+        this.parent = parent;
+        this.children = [];
+        this.visits = 0; // Total number of visits to this node
+        this.wins = 0; // Number of wins for this node
+    }
+
+    isFullyExpanded() {
+        return this.children.length === this.availableMoves().length;
+    }
+
+    availableMoves() {
+        return this.board.map((cell, index) => cell === '' ? index : null).filter(move => move !== null);
+    }
+
+    isTerminal() {
+        return checkWinner(this.board) || this.board.every(cell => cell);
+    }
+
+    addChild(move, player) {
+        const newBoard = [...this.board];
+        newBoard[move] = player === 1 ? 'X' : 'O';
+        const childNode = new Node(newBoard, -player, move, this);
+        this.children.push(childNode);
+        return childNode;
+    }
+
+    bestChild() {
+        let bestChild = null;
+        let bestUCB = -Infinity;
+        this.children.forEach(child => {
+            const ucb = (child.wins / child.visits) + Math.sqrt(2 * Math.log(this.visits) / child.visits);
+            if (ucb > bestUCB) {
+                bestUCB = ucb;
+                bestChild = child;
+            }
+        });
+        return bestChild;
+    }
+
+    mostVisitedChild() {
+        return this.children.reduce((maxChild, child) => child.visits > maxChild.visits ? child : maxChild, this.children[0]);
+    }
+}
+
+function getBestMoveMCTS() {
+    const iterations = 100000// Number of MCTS simulations
+    const rootNode = new Node(board, currentPlayer === 'X' ? 1 : -1);
+
+    for (let i = 0; i < iterations; i++) {
+        let node = rootNode;
+
+        // Selection: Traverse down using UCB until we find a non-terminal node
+        while (!node.isTerminal() && node.isFullyExpanded()) {
+            node = node.bestChild();
+        }
+
+        // Expansion: Expand the node by adding a new child if it's not fully expanded
+        if (!node.isTerminal() && !node.isFullyExpanded()) {
+            const availableMoves = node.availableMoves();
+            const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            node = node.addChild(randomMove, node.player);
+        }
+
+        // Simulation: Simulate a random game from this node
+        let simulationNode = node;
+        let simulationPlayer = simulationNode.player;
+        while (!simulationNode.isTerminal()) {
+            const availableMoves = simulationNode.availableMoves();
+            const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            const newBoard = [...simulationNode.board];
+            newBoard[randomMove] = simulationPlayer === 1 ? 'X' : 'O';
+            simulationNode = new Node(newBoard, -simulationPlayer, randomMove);
+            simulationPlayer = -simulationPlayer;
+        }
+
+        // Backpropagation: Propagate the result back up the tree
+        let winner = checkWinner(simulationNode.board);
+        let result = winner === 'X' ? 1 : (winner === 'O' ? -1 : 0);
+        while (node) {
+            node.visits++;
+            if (node.player === 1) {
+                node.wins += result === 1 ? 1 : (result === -1 ? 0 : 0.5);
+            } else {
+                node.wins += result === -1 ? 1 : (result === 1 ? 0 : 0.5);
+            }
+            node = node.parent;
+        }
+    }
+
+    // Choose the child with the highest visit count (most promising)
+    return rootNode.mostVisitedChild().move;
+}
+
+
+// Define the heuristic function
+function evaluateBoard(board, player) {
+    const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],  // Rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],  // Columns
+        [0, 4, 8], [2, 4, 6]              // Diagonals
+    ];
+
+    let score = 0;
+
+    // Scoring based on center control
+    if (board[4] === player) score += 50;
+
+    // Scoring based on corner control
+    [0, 2, 6, 8].forEach(pos => {
+        if (board[pos] === player) score += 30;
+    });
+
+    // Evaluate each line for potential wins or blocks
+    lines.forEach(line => {
+        const [a, b, c] = line;
+
+        // Count how many marks the player and the opponent have in the line
+        const playerCount = [board[a], board[b], board[c]].filter(mark => mark === player).length;
+        const opponentCount = [board[a], board[b], board[c]].filter(mark => mark && mark !== player).length;
+
+        // Heuristic scoring based on line evaluations
+        if (playerCount === 3) {
+            // Winning line
+            score += 1000;
+        } else if (playerCount === 2 && opponentCount === 0) {
+            // Two in a row with a free space
+            score += 100;
+        } else if (opponentCount === 2 && playerCount === 0) {
+            // Block opponent's win
+            score += 500;
+        }
+    });
+
+    return score;
+}
+
+// Get the best move based on heuristic evaluation
+function getBestMoveHeuristics() {
+    let bestMove = null;
+    let bestScore = -Infinity;
+
+    board.forEach((cell, index) => {
+        if (cell === "") { // Check if the cell is empty
+            board[index] = currentPlayer; // Make the move
+            let score = evaluateBoard(board, currentPlayer); // Evaluate the board
+
+            // If this move is better, update the best move
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = index;
+            }
+
+            board[index] = ""; // Undo the move
+        }
+    });
+
+    return bestMove;
+}
